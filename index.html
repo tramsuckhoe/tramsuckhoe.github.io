@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trạm Sức Khỏe Gia Đình</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Thư viện PapaParse để đọc file CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'blob': 'blob 7s infinite',
+                    },
+                    keyframes: {
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Tinh chỉnh scrollbar cho đẹp */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .animation-delay-2000 {
+            animation-delay: 2s;
+        }
+
+        .animation-delay-4000 {
+            animation-delay: 4s;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-slideUp {
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 0.6;
+            }
+
+            80% {
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: translateY(-100px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: white;
+            animation: floatUp infinite linear;
+            pointer-events: none;
+            filter: blur(1px);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen relative overflow-x-hidden font-sans">
+    <!-- Animated Background Gradients (Tone Xanh Dương) -->
+    <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <div
+            class="absolute top-0 -left-4 w-72 h-72 bg-cyan-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob">
+        </div>
+        <div
+            class="absolute top-0 -right-4 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000">
+        </div>
+        <div
+            class="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000">
+        </div>
+
+        <!-- Particles container -->
+        <div id="particles-container" class="absolute inset-0 z-0"></div>
+    </div>
+
+    <main class="relative z-10 max-w-md mx-auto pt-10 pb-20 px-5">
+        <!-- Header -->
+        <header class="text-center mb-8" id="profile-container">
+            <!-- Render từ JS -->
+        </header>
+
+        <!-- Tabs Container -->
+        <div id="tabs-container"></div>
+
+        <!-- Links Container -->
+        <section id="links-container">
+            <!-- Render Loading -->
+            <div class="flex justify-center items-center py-10">
+                <i class="fa-solid fa-spinner fa-spin text-blue-500 text-3xl"></i>
+            </div>
+        </section>
+    </main>
+
+    <script src="data.js"></script>
+    <script>
+        // Cấu trúc lại data từ pageData
+        const data = {
+            profile: pageData.profile,
+            // Khởi tạo mảng categories với mảng links rỗng dựa trên cấu hình
+            categories: pageData.categoriesConfig.map(c => ({ ...c, links: [] }))
+        };
+
+        // --- HỆ THỐNG PARTICLES ---
+        function createParticles() {
+            const container = document.getElementById('particles-container');
+            const particleCount = 15;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const size = Math.random() * 4 + 2; // 2px to 6px
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's'; // 10s to 20s
+                particle.style.animationDelay = (Math.random() * 5) + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // --- RENDER PROFILE ---
+        function renderProfile() {
+            let socialsHtml = '';
+            if (data.profile.socials && data.profile.socials.length > 0) {
+                socialsHtml = '<div class="flex justify-center gap-3.5 mt-5">';
+                data.profile.socials.forEach(social => {
+                    const iconPrefix = ['fa-facebook', 'fa-tiktok', 'fa-youtube', 'fa-instagram'].includes(social.icon) ? 'fa-brands' : 'fa-solid';
+                    socialsHtml += `
+                        <a href="${social.url}" target="_blank" class="w-9 h-9 rounded-full bg-white/70 backdrop-blur-md border border-white/50 shadow-sm flex items-center justify-center text-base transition-all duration-300 hover:scale-110 hover:bg-white hover:shadow-md ${social.color}" aria-label="${social.name}" title="${social.name}">
+                            <i class="${iconPrefix} ${social.icon} fa-fw"></i>
+                        </a>
+                    `;
+                });
+                socialsHtml += '</div>';
+            }
+
+            // Giảm kích thước avatar một chút (w-24 h-24 thay vì w-28)
+            const profileHtml = `
+                <div class="relative inline-block mb-3">
+                    <div class="absolute inset-0 bg-blue-400 rounded-full blur-md animate-pulse opacity-60 scale-105"></div>
+                    <img src="${data.profile.avatar}" class="relative w-24 h-24 rounded-full mx-auto border-[3px] border-white shadow-lg object-cover z-10">
+                </div>
+                <h1 class="text-[22px] font-bold text-slate-800 mb-1.5 tracking-tight">${data.profile.name}</h1>
+                <p class="text-slate-600 text-[13.5px] px-6 leading-relaxed font-medium">${data.profile.bio}</p>
+                ${socialsHtml}
+            `;
+            document.getElementById('profile-container').innerHTML = profileHtml;
+        }
+
+        // --- HỆ THỐNG TABS & LINKS ---
+        let currentTabId = data.categories[0]?.id;
+
+        function renderTabs() {
+            let tabsHtml = '<div class="flex space-x-2.5 overflow-x-auto mb-6 pb-2 scrollbar-hide px-1">';
+            data.categories.forEach(category => {
+                const isActive = category.id === currentTabId;
+                const activeClasses = isActive
+                    ? 'bg-blue-500 text-white shadow-md border-blue-500'
+                    : 'bg-white/60 backdrop-blur-sm text-slate-600 border-white/40 hover:bg-white/80';
+
+                tabsHtml += `
+                    <button onclick="switchTab('${category.id}')" class="flex-shrink-0 px-4 py-2 rounded-full text-[13px] font-semibold border transition-all duration-300 ${activeClasses} flex items-center gap-1.5 active:scale-95">
+                        <i class="fa-solid ${category.icon}"></i> ${category.title}
+                    </button>
+                `;
+            });
+            tabsHtml += '</div>';
+            return tabsHtml;
+        }
+
+        function switchTab(tabId) {
+            currentTabId = tabId;
+            document.getElementById('tabs-container').innerHTML = renderTabs();
+            document.getElementById('links-container').innerHTML = renderLinks();
+        }
+
+        function renderLinks() {
+            const category = data.categories.find(c => c.id === currentTabId);
+            if (!category) return '<p class="text-center text-slate-500 py-5">Chưa có sản phẩm nào.</p>';
+
+            let linksHtml = '<div class="space-y-3.5 px-1 pb-4">';
+            category.links.forEach((link, index) => {
+                const delay = index * 100; // Animation delay cho từng item (Staggered fade-in)
+
+                const imageHtml = link.image
+                    ? `<img src="${link.image}" alt="${link.name}" class="w-[52px] h-[52px] rounded-[12px] object-cover shadow-sm border border-slate-100">`
+                    : `<div class="w-[52px] h-[52px] bg-gradient-to-br from-blue-50 to-indigo-50 rounded-[12px] flex items-center justify-center text-blue-500 shadow-inner"><i class="fa-solid ${link.icon} text-lg"></i></div>`;
+
+                const badgeColorClass = link.badgeColor ? link.badgeColor : 'from-red-500 to-orange-500';
+                const badgeHtml = link.badge
+                    ? `<span class="absolute -top-2 -right-2 bg-gradient-to-r ${badgeColorClass} text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow-md animate-bounce border border-white z-10">${link.badge}</span>`
+                    : '';
+
+                const descHtml = link.desc
+                    ? `<p class="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-tight">${link.desc}</p>`
+                    : '';
+
+                linksHtml += `
+                    <a href="${link.url}" target="_blank" 
+                       class="relative group flex items-start bg-white/60 backdrop-blur-md p-3.5 rounded-[18px] shadow-sm border border-white/60 hover:border-blue-400/50 hover:bg-white/90 hover:shadow-lg transition-all duration-300 animate-slideUp active:scale-[0.98]"
+                       style="animation-delay: ${delay}ms; animation-fill-mode: both;">
+                        ${badgeHtml}
+                        <div class="flex-shrink-0 mr-3.5 relative mt-0.5">
+                            ${imageHtml}
+                        </div>
+                        <div class="flex-grow pr-2 self-center">
+                            <h3 class="font-semibold text-slate-800 group-hover:text-blue-600 transition-colors text-[13.5px] leading-snug line-clamp-2">${link.name}</h3>
+                            ${descHtml}
+                        </div>
+                        <div class="flex-shrink-0 w-7 h-7 bg-white/80 rounded-full flex items-center justify-center group-hover:bg-blue-50 shadow-sm transition-all border border-slate-100 group-hover:scale-110 self-center">
+                            <i class="fa-solid fa-chevron-right text-[10px] text-slate-400 group-hover:text-blue-500"></i>
+                        </div>
+                    </a>
+                `;
+            });
+            linksHtml += '</div>';
+            return linksHtml;
+        }
+
+        // --- TẢI DỮ LIỆU TỪ CSV BẰNG PAPAPARSE ---
+        function loadDataFromCSV() {
+            Papa.parse(pageData.csvUrl, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function (results) {
+                    const rows = results.data;
+                    rows.forEach(row => {
+                        // Tìm danh mục dựa trên CategoryId trong CSV
+                        const category = data.categories.find(c => c.id === row.CategoryId?.trim());
+                        if (category && row.Name) {
+                            category.links.push({
+                                name: row.Name.trim(),
+                                desc: row.Desc ? row.Desc.trim() : '',
+                                url: row.URL ? row.URL.trim() : '#',
+                                icon: row.Icon ? row.Icon.trim() : 'fa-link',
+                                image: row.Image ? row.Image.trim() : '',
+                                badge: row.Badge ? row.Badge.trim() : '',
+                                badgeColor: row.BadgeColor ? row.BadgeColor.trim() : ''
+                            });
+                        }
+                    });
+
+                    // Render danh sách link sau khi có data
+                    document.getElementById('links-container').innerHTML = renderLinks();
+                },
+                error: function (error) {
+                    console.error("Lỗi khi tải CSV:", error);
+                    document.getElementById('links-container').innerHTML = '<p class="text-center text-red-500 py-5">Không thể tải dữ liệu sản phẩm.</p>';
+                }
+            });
+        }
+
+        // --- INITIALIZE ---
+        renderProfile();
+        document.getElementById('tabs-container').innerHTML = renderTabs();
+        loadDataFromCSV();
+
+    </script>
+</body>
+
+</html>
