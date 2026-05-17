@@ -9,19 +9,5 @@ const pageData = {
       { "name": "Shopee", "icon": "fa-bag-shopping", "url": "https://s.shopee.vn/8piVUIT4GF", "color": "text-orange-500 hover:text-orange-400" }
     ]
   },
-  "categoriesConfig": [
-    {
-      "id": "thuc-pham",
-      "title": "Dinh dưỡng & Đề kháng",
-      "icon": "fa-shield-virus",
-      "color": "text-emerald-100"
-    },
-    {
-      "id": "thiet-bi",
-      "title": "Tủ thuốc & Thiết bị",
-      "icon": "fa-stethoscope",
-      "color": "text-cyan-100"
-    }
-  ],
   "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSfwg4CNm_f2uxYjs--A2J-Ja5PPLplmk4RFY2Hj7HtqKXUoqqnkjndWkGQ_6_9wyKkdCst1oGTBik5/pub?output=csv"
 };
